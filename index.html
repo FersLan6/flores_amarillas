@@ -1,387 +1,510 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Flores Amarillas – Para Ti</title>
-  <style>
-    :root{
-      --bg1: #0b0f1a;   /* noche */
-      --bg2: #1b2640;   /* azul profundo */
-      --glow: #ffd54f;  /* brillo amarillo */
-      --petal: #ffeb3b; /* pétalo amarillo */
-      --petal2:#ffd700; /* pétalo dorado */
-      --center:#6b3f00; /* centro de flor */
-      --stem:#2e7d32;   /* tallo */
-      --leaf:#3fa34d;   /* hoja */
-      --accent:#ff6f61; /* corazones */
-    }
-    html,body{
-      margin:0; height:100%; overflow:hidden; background: radial-gradient(1200px 800px at 70% 20%, #12203a 0%, var(--bg2) 35%, var(--bg1) 100%);
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Color Emoji", "Apple Color Emoji";
-    }
-    /* Fondo con estrellas suaves */
-    .stars{position:fixed; inset:0; pointer-events:none; background:transparent;}
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Flores Amarillas – Carta y Poema</title>
 
-    /* Contenedor principal */
-    .wrap{position:fixed; inset:0; display:grid; place-items:center;}
+<!-- Tipografías elegantes -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Great+Vibes&display=swap" rel="stylesheet">
 
-    /* Lienzos */
-    canvas{position:absolute; inset:0; width:100%; height:100%; display:block;}
-    #flowers{filter: drop-shadow(0 4px 12px rgba(255,213,79,.25));}
+<style>
+:root{
+  --bg1:#0b0f1a; --bg2:#14213d;
+  --gold1:#ffe082; --gold2:#ffd54f; --gold3:#fff1b3;
+  --ink:#2b2100; --ink2:#5b4a0a;
+  --heart:#ff6f61; --petal:#ffeb3b;
+  --glow:#ffd54f; --white:#fdfcf7;
+}
 
-    /* Mensaje y nombre (SVG) */
-    .hero{position:absolute; inset:0; display:grid; place-items:center; text-align:center;}
-    .name-svg{width:min(90vw, 900px); height:auto;}
-    .subtitle{color:#ffd54f; letter-spacing:.12em; text-transform:uppercase; font-weight:600; opacity:.85; text-shadow:0 0 10px rgba(255,213,79,.5);}
+/* Fondo romántico con viñeta */
+html,body{
+  margin:0; height:100%; overflow:hidden;
+  background:
+    radial-gradient(1400px 900px at 70% 18%, #1d2b4f 0%, var(--bg2) 40%, var(--bg1) 100%),
+    radial-gradient(70vw 50vh at 50% 120%, rgba(255,224,130,.08), transparent 60%);
+  font-family: 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
+}
 
-    /* Botón de gesto beso */
-    .cta{position:fixed; bottom:24px; left:50%; transform:translateX(-50%);} 
-    .cta button{border:none; padding:14px 20px; border-radius:16px; font-size:16px; cursor:pointer; backdrop-filter: blur(6px);
-      background: linear-gradient(135deg, rgba(255,235,59,.9), rgba(255,215,0,.85));
-      color:#3b2f00; font-weight:700; box-shadow:0 8px 24px rgba(255,215,0,.35);
-      transition: transform .15s ease, box-shadow .2s ease;} 
-    .cta button:hover{transform:translateX(-0%) translateY(-2px); box-shadow:0 12px 32px rgba(255,215,0,.5);}  
+/* lienzos */
+canvas{ position:absolute; inset:0; width:100%; height:100%; display:block }
+#flowers{ filter:drop-shadow(0 4px 12px rgba(255,213,79,.25)) }
 
-    /* Tooltips */
-    .hint{position:fixed; top:14px; right:16px; color:#d5d9e2; font-size:12px; opacity:.7}
-    .hint b{opacity:.9}
+/* escenas */
+.scene-letter,.scene-poem{ position:absolute; inset:0; transition:opacity .6s ease }
+.scene-letter{ z-index:2 } .scene-poem{ z-index:1 }
+body[data-step="letter"] .scene-poem{ opacity:0; pointer-events:none; visibility:hidden }
+body[data-step="poem"]  .scene-letter{ opacity:0; pointer-events:none; visibility:hidden }
 
-    /* Animación del trazo del nombre */
-    .dash-animate{stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: draw 3.6s ease forwards 1s;}
-    @keyframes draw{to{stroke-dashoffset:0}}
+/* ================== CARTA (simple, 2 caras apiladas) ================== */
+.center{
+  /* centrado SIEMPRE y compatible con móvil */
+  position:fixed;
+  inset:0;
+  height:100dvh;           /* usa alto real en móviles */
+  display:grid;
+  place-items:center;
+  padding:5vh 3vw;         /* aire en alto y lados */
+  box-sizing:border-box;
+}
 
-    /* Partículas de brillo */
-    .glow{position:absolute; width:6px; height:6px; border-radius:50%; background:radial-gradient(circle, #fff 0%, var(--glow) 45%, transparent 65%);
-      pointer-events:none; mix-blend-mode:screen; filter: blur(.5px);} 
+.envelope{
+  /* ancho fluido + altura que nunca rebasa la pantalla */
+  width:min(94vw, 640px);
+  max-height:min(78dvh, 520px);
+  aspect-ratio: 5 / 3;     /* mantiene proporción agradable */
+  position:relative;
+}
 
-    /* Panel de diagnóstico (tests) */
-    #diag{position:fixed; left:12px; bottom:12px; background:rgba(0,0,0,.45); color:#ffd54f; font:12px/1.4 monospace; padding:8px 10px; border-radius:10px; display:none}
-    #diag b{color:#fff3}
-  </style>
+
+
+/* Tarjetas */
+.card{
+  position:absolute; inset:0; border-radius:22px; overflow:hidden;
+  background: linear-gradient(180deg, #fff8db, #ffeaa3);
+  border:1px solid rgba(255,255,255,.6);
+  box-shadow:
+    0 22px 70px rgba(0,0,0,.35),
+    0 0 0 1px rgba(0,0,0,.06) inset,
+    0 12px 32px rgba(255,208,0,.15) inset;
+  opacity:1; transition:opacity .55s ease;
+}
+.card.back{ opacity:0; pointer-events:none }
+.envelope.show-back .card.front{ opacity:0; pointer-events:none }
+.envelope.show-back .card.back{ opacity:1; pointer-events:auto }
+
+/* Frente (De/Para) */
+.front .inner{
+  width:86%; height:76%; margin:auto; position:absolute; inset:0; border-radius:16px;
+  background:linear-gradient(180deg,#fffef8,var(--white));
+  border:1px solid rgba(0,0,0,.05);
+  box-shadow:0 2px 0 #00000010 inset;
+  color:var(--ink);
+  display:flex; flex-direction:column; justify-content:center; gap:.55rem;
+  padding:28px 32px;
+}
+.front .stamp{
+  position:absolute; right:18px; top:18px; font-size:30px;
+  background:linear-gradient(180deg,var(--gold3),var(--gold2));
+  border:2px solid #e4c86a; padding:6px 10px; border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,.15), 0 0 10px rgba(255,215,0,.35);
+}
+.front p{ margin:0; font-size:20px; line-height:1.7; letter-spacing:.2px }
+.front b{ font-weight:800 }
+.front .hint{ position:absolute; bottom:14px; left:0; right:0; text-align:center; color:#6e6236; font-size:13px }
+
+/* Reverso */
+.back{
+  background:linear-gradient(180deg,var(--gold1),var(--gold2));
+  /* importante: el contenido usa el mismo radio y recorte que la tarjeta */
+  border-radius:22px;
+  overflow:hidden;
+  position:absolute; inset:0;
+}
+
+.flap{
+  position:absolute; left:0; right:0; top:0;
+  height:52%;
+  background:linear-gradient(180deg,var(--gold1),var(--gold2));
+  clip-path:polygon(0 0,100% 0,50% 100%);
+  transform-origin:50% 0;
+  transform:rotateX(0);
+  transition:transform .7s ease;
+  box-shadow:0 12px 24px rgba(0,0,0,.18) inset;
+}
+
+.paper{
+  position:absolute;
+  left:7%;
+  right:7%;
+  top:14%;
+  bottom:11%;
+
+  background:linear-gradient(180deg,#fffef8,#fff6dc);
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:14px;
+  padding:24px 22px 76px;
+  box-shadow:0 10px 26px rgba(0,0,0,.12);
+  color:var(--ink);
+
+  opacity:0;
+  transform:translateY(110%);
+  transition:transform .85s ease, opacity .85s ease .15s;
+}
+
+
+.envelope.opened .flap{ transform:rotateX(180deg) }
+.envelope.opened .paper{ opacity:1; transform:translateY(0) }
+
+.paper h1{
+  margin:0 0 8px; font-weight:800; color:var(--ink);
+  font-size:clamp(22px,5vw,32px);
+}
+.paper p{ margin:8px 0; line-height:1.75; color:var(--ink2) }
+
+/* Botón con chispitas */
+.open-btn{
+  position:absolute; left:50%; bottom:16px; transform:translateX(-50%);
+  border:none; border-radius:14px; padding:12px 18px;
+  font-weight:800; cursor:pointer; color:#3b2f00;
+  background:linear-gradient(135deg,var(--gold3),var(--gold2));
+  box-shadow:0 10px 26px rgba(255,215,0,.35);
+  outline:2px solid rgba(255,230,150,.35);
+}
+.open-btn:after{
+  content:"✨"; margin-left:6px; display:inline-block;
+  animation:spark 1.3s ease-in-out infinite;
+}
+@keyframes spark{ 0%,100%{opacity:0; transform:translateY(0)} 50%{opacity:1; transform:translateY(-2px)} }
+
+/* ================== Poema / Flores ================== */
+.poem{ position:absolute; inset:0; display:grid; place-items:center; text-align:center; pointer-events:none }
+.poem-inner{ max-width:min(92vw,900px) }
+.title{
+  font-weight:900; letter-spacing:.02em; margin-bottom:.25rem;
+  font-size:clamp(28px,6vw,56px);
+  background:linear-gradient(180deg,#fffad1,#ffe082,#ffd54f);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 4px 16px rgba(255,215,0,.25));
+}
+.subtitle{
+  font-family:'Great Vibes', cursive; font-size:clamp(20px,4.5vw,34px);
+  color:#ffefb6; opacity:.9; margin-bottom:.8rem;
+}
+.lines{ margin-top:8px; color:#e9eef6cc; font-size:clamp(14px,2.4vw,20px); line-height:1.7 }
+.lines .line{ opacity:0; transform:translateY(8px); transition:opacity .55s ease, transform .55s ease }
+.lines .line.show{ opacity:1; transform:translateY(0) }
+
+.cta{ position:fixed; bottom:18px; left:50%; transform:translateX(-50%) }
+.cta button{
+  border:none; padding:12px 18px; border-radius:14px; font-size:15px; cursor:pointer;
+  background:linear-gradient(135deg,rgba(255,235,59,.92),rgba(255,215,0,.88));
+  color:#3b2f00; font-weight:800; box-shadow:0 10px 26px rgba(255,215,0,.35)
+}
+#counter{
+  position:fixed; top:14px; left:14px; background:rgba(0,0,0,.45); color:var(--glow);
+  border:1px solid #ffffff14; padding:8px 10px; border-radius:12px; font:12px/1.2 monospace
+}
+
+/* estrellitas del fondo */
+.stars{ position:fixed; inset:0; pointer-events:none }
+.glow{ position:absolute; width:6px; height:6px; border-radius:50%;
+  background:radial-gradient(circle,#fff 0%,var(--glow) 45%,transparent 65%);
+  mix-blend-mode:screen; filter:blur(.5px) }
+
+
+@media (max-width: 420px){
+  .front .inner{ padding:20px 22px; }
+  .front p{ font-size:18px; }
+
+  .paper{
+    top:16%;
+    bottom:12%;
+    padding:20px 18px 70px;
+  }
+  .paper h1{ font-size:clamp(20px, 6.2vw, 26px); }
+  .open-btn{ bottom:12px; padding:11px 16px; }
+
+  .card{ border-radius:18px; }
+  .back{ border-radius:18px; }
+}
+
+/* Sube ligeramente el poema para que no choque con las flores */
+.poem-inner{ transform: translateY(-2vh); }
+
+@media (max-height: 720px){
+  .poem-inner{ transform: translateY(-6vh); }
+}
+
+@media (max-height: 600px){
+  .poem-inner{ transform: translateY(-10vh); }
+}
+
+
+</style>
+
 </head>
-<body>
+<body data-step="letter">
+
+<!-- ============== ESCENA POEMA ============== -->
+<div class="scene-poem">
   <canvas id="bg"></canvas>
   <canvas id="flowers"></canvas>
   <canvas id="floaters"></canvas>
   <div class="stars" id="stars"></div>
 
-  <div class="hero">
-    <!-- 💛 Cambia el texto entre comillas por el nombre de tu chica -->
-    <svg class="name-svg" viewBox="0 0 1024 380" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Nombre">
-      <defs>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="3" result="blur"/>
-          <feMerge>
-            <feMergeNode in="blur"/>
-            <feMergeNode in="SourceGraphic"/>
-          </feMerge>
-        </filter>
-        <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#fff59d"/>
-          <stop offset="50%" stop-color="#ffe082"/>
-          <stop offset="100%" stop-color="#ffd54f"/>
-        </linearGradient>
-      </defs>
-      <!-- Texto en trazo (animado) -->
-      <path id="namePath" d="M120 250 C 220 120, 420 120, 520 250 S 780 380, 900 240" stroke="url(#gold)" stroke-width="6" fill="none" opacity=".55" filter="url(#glow)"/>
-      
-      <!-- Nombre principal: EDITA el texto aquí 👉 -->
-      <g transform="translate(60,0)">
-        <text id="nameText" x="50" y="210" font-size="65" font-weight="800" fill="url(#gold)" filter="url(#glow)" style="font-family: 'Segoe Script', 'Pacifico', 'Great Vibes', cursive; letter-spacing: 1px;">
-          EVITA MI AMORSHITO 💛
-        </text>
-      </g>
-
-      <!-- Subtítulo dulce -->
-      <text x="512" y="320" text-anchor="middle" class="subtitle" font-size="20">Con amor y flores amarillas, hoy y siempre</text>
-
-      <!-- Trazos brillantes decorativos -->
-      <path d="M150 140 Q220 100 290 140" stroke="#fff59d" stroke-width="2" fill="none" class="dash-animate"/>
-      <path d="M730 160 Q800 120 870 160" stroke="#fff59d" stroke-width="2" fill="none" class="dash-animate"/>
-    </svg>
+  <div class="poem" aria-live="polite">
+    <div class="poem-inner">
+      <div class="title">Flores amarillas para ti</div>
+      <div class="subtitle">porque tu sonrisa es mi primavera</div>
+      <div class="lines" id="poemLines">
+        <div class="line">Entre mil constelaciones, te elegí a ti.</div>
+        <div class="line">Y entre todos los colores, elegí el amarillo,</div>
+        <div class="line">porque brillas, calientas y haces hogar mi corazón.</div>
+        <div class="line">Toca la pantalla y hagamos florecer el mundo. 💛</div>
+      </div>
+    </div>
   </div>
 
   <div class="cta"><button id="kiss">Toca para un beso 💋💛</button></div>
-  <div class="hint">Pulsa <b>H</b> para ocultar/mostrar el nombre · Pulsa <b>D</b> para ver tests</div>
-  <div id="diag"></div>
+  <div id="counter">pétalos: <b id="cP">0</b> · corazones: <b id="cH">0</b></div>
+</div>
 
-  <script>
-  // ==========================
-  // Utilidades
-  // ==========================
-  const rand = (a,b)=>Math.random()*(b-a)+a;
-  const TAU = Math.PI*2;
+<!-- ============== ESCENA CARTA (simple) ============== -->
+<div class="scene-letter center">
+  <div class="envelope" id="env">
+    <!-- Frente -->
+    <div class="card front">
+      <div class="inner">
+        <div class="stamp">💛</div>
+        <p><b>De:</b> Mi ❤️</p>
+        <p><b>Para:</b> Mi preciosa 💛</p>
+        <div class="hint">(Toca para ver el reverso)</div>
+      </div>
+    </div>
+    <!-- Reverso -->
+    <div class="card back">
+      <div class="flap"></div>
+      <div class="paper">
+        <h1>Mi niña preciosa 💛</h1>
+        <p>No hay flor más hermosa que tú.</p>
+        <p>Si quieres saber por qué, toca este botón…</p>
+        <button class="open-btn" id="openPoem">Ver por qué</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-  // ==========================
-  // Referencias DOM (antes de cualquier uso)
-  // 🛠️ Fix: mover starsDiv antes de la primera llamada a makeStars() (evita TDZ)
-  // ==========================
-  const bg = document.getElementById('bg');
-  const flowers = document.getElementById('flowers');
-  const floaters = document.getElementById('floaters');
-  const starsDiv = document.getElementById('stars'); // <- ya disponible antes de resize/makeStars
-  const diag = document.getElementById('diag');
+<script>
+(()=>{ // IIFE para no ensuciar el global
+  const rand=(a,b)=>Math.random()*(b-a)+a, TAU=Math.PI*2;
 
-  // Contextos
-  const canvases = [bg, flowers, floaters];
-  const ctxBg = bg.getContext('2d');
-  const ctxF = flowers.getContext('2d');
-  const ctxFl = floaters.getContext('2d');
+  /* ----- Carta: mostrar reverso + abrir solapa ----- */
+  const env=document.getElementById('env');
+  let showedBack=false;
+  env.addEventListener('click',()=>{
+    if(!showedBack){
+      showedBack=true;
+      env.classList.add('show-back');           // cambia a la cara posterior
+      setTimeout(()=>env.classList.add('opened'), 350); // abre solapa + hoja
+    }
+  });
 
-  // ==========================
-  // Estrellas suaves
-  // ==========================
+  document.getElementById('openPoem').addEventListener('click',(e)=>{
+    e.stopPropagation();
+    document.body.setAttribute('data-step','poem');
+    startPoemScene();
+  });
+
+  /* ----- DOM/ctx para las flores ----- */
+  const bg=document.getElementById('bg');
+  const flowers=document.getElementById('flowers');
+  const floatersCanvas=document.getElementById('floaters');
+  const starsDiv=document.getElementById('stars');
+  const kissBtn=document.getElementById('kiss');
+  const cPetals=document.getElementById('cP');
+  const cHearts=document.getElementById('cH');
+
+  const canvases=[bg,flowers,floatersCanvas];
+  const ctxBg=bg.getContext('2d'),
+        ctxF=flowers.getContext('2d'),
+        ctxFl=floatersCanvas.getContext('2d');
+
+  /* ----- Estrellas suaves ----- */
   function makeStars(){
-    if(!starsDiv) return; // guard
-    starsDiv.innerHTML = '';
-    const N = 120;
-    for(let i=0;i<N;i++){
-      const s = document.createElement('div'); s.className = 'glow';
-      s.style.left = rand(0, innerWidth) + 'px';
-      s.style.top = rand(0, innerHeight) + 'px';
-      const scale = rand(.6, 1.8);
-      s.style.width = 4*scale+'px'; s.style.height = 4*scale+'px';
-      s.style.opacity = rand(.15,.5);
+    if(!starsDiv) return; starsDiv.innerHTML='';
+    for(let i=0;i<120;i++){
+      const s=document.createElement('div'); s.className='glow';
+      s.style.left=rand(0,innerWidth)+'px';
+      s.style.top =rand(0,innerHeight)+'px';
+      const sc=rand(.6,1.8);
+      s.style.width=4*sc+'px'; s.style.height=4*sc+'px';
+      s.style.opacity=rand(.15,.5);
       starsDiv.appendChild(s);
     }
   }
 
-  // ==========================
-  // Resize de lienzos
-  // ==========================
+  /* ----- Resize ----- */
   function resize(){
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const dpr=Math.min(2, devicePixelRatio||1);
     for(const c of canvases){
-      c.width = innerWidth * dpr; c.height = innerHeight * dpr; c.style.width = '100%'; c.style.height = '100%';
-      const cx = c.getContext('2d'); cx.setTransform(dpr,0,0,dpr,0,0);
+      c.width=innerWidth*dpr; c.height=innerHeight*dpr;
+      c.style.width='100%'; c.style.height='100%';
+      c.getContext('2d').setTransform(dpr,0,0,dpr,0,0);
     }
-    makeStars(); // usa starsDiv ya inicializado
+    makeStars(); seedBouquet();
   }
   addEventListener('resize', resize, {passive:true});
 
-  // ==========================
-  // Fondo animado sutil
-  // ==========================
-  let t = 0;
+  addEventListener('load', resize, { once: true });
+
+  /* ----- Fondo dinámico ----- */
+  let t=0;
   function drawBg(){
-    t += 0.0025;
-    const g = ctxBg.createRadialGradient(innerWidth*0.7 + Math.sin(t)*40, innerHeight*0.2 + Math.cos(t)*30, 120,
-                                         innerWidth*0.5, innerHeight*0.7, Math.max(innerWidth, innerHeight));
-    g.addColorStop(0, '#15223a');
-    g.addColorStop(.4, '#101a2f');
-    g.addColorStop(1, '#0b0f1a');
-    ctxBg.fillStyle = g;
-    ctxBg.fillRect(0,0,innerWidth, innerHeight);
+    t+=0.0025;
+    const g=ctxBg.createRadialGradient(
+      innerWidth*0.7+Math.sin(t)*40, innerHeight*0.2+Math.cos(t)*30, 120,
+      innerWidth*0.5, innerHeight*0.7, Math.max(innerWidth,innerHeight)
+    );
+    g.addColorStop(0,'#15223a'); g.addColorStop(.4,'#101a2f'); g.addColorStop(1,'#0b0f1a');
+    ctxBg.fillStyle=g; ctxBg.fillRect(0,0,innerWidth,innerHeight);
   }
 
-  // ==========================
-  // Modelo de flor
-  // ==========================
+  /* ----- Flor amarilla ----- */
   class YellowFlower{
-    constructor(x,y,scale=1){
-      this.x=x; this.y=y; this.scale=scale; this.angle=rand(0,TAU);
-      this.grow = 0; // 0..1
-      this.swing = rand(.6,1.2);
-      this.petalCount = Math.floor(rand(16,26));
-    }
+    constructor(x,y,s=1){ this.x=x; this.y=y; this.s=s; this.grow=0; this.petalCount=Math.floor(rand(16,26)); }
     draw(ctx){
-      ctx.save();
-      ctx.translate(this.x, this.y);
-      // Tallo
+      ctx.save(); ctx.translate(this.x,this.y);
       ctx.rotate(Math.sin((Date.now()+this.x)*0.001)*0.02);
-      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--stem');
-      ctx.beginPath();
-      ctx.moveTo(0,0); ctx.quadraticCurveTo(10,60*this.scale, 0, 120*this.scale); ctx.lineTo(-4,120*this.scale); ctx.quadraticCurveTo(6,60*this.scale, -4,0); ctx.closePath(); ctx.fill();
-      // Hoja
-      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--leaf');
-      ctx.beginPath(); ctx.ellipse(-10, 60*this.scale, 18*this.scale, 10*this.scale, -.6, 0, TAU); ctx.fill();
 
-      // Cabeza de flor
-      ctx.save();
-      const grow = this.grow;
-      ctx.scale(this.scale*grow, this.scale*grow);
-      // pétalos
+      // tallo
+      ctx.fillStyle='#2e7d32';
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.quadraticCurveTo(10,60*this.s,0,120*this.s);
+      ctx.lineTo(-4,120*this.s); ctx.quadraticCurveTo(6,60*this.s,-4,0); ctx.closePath(); ctx.fill();
+
+      // hoja
+      ctx.fillStyle='#3fa34d';
+      ctx.beginPath(); ctx.ellipse(-10,60*this.s,18*this.s,10*this.s,-.6,0,TAU); ctx.fill();
+
+      // cabeza
+      ctx.save(); const g=this.grow; ctx.scale(this.s*g,this.s*g);
       for(let i=0;i<this.petalCount;i++){
-        const a = (i/this.petalCount)*TAU + Math.sin(Date.now()*0.001 + this.x*0.01)*0.05;
-        const r = 26 + 2*Math.sin(i*0.7 + Date.now()*0.002);
+        const a=(i/this.petalCount)*TAU + Math.sin(Date.now()*0.001 + this.x*0.01)*0.05;
+        const r=26+2*Math.sin(i*0.7 + Date.now()*0.002);
         ctx.save(); ctx.rotate(a);
-        const grd = ctx.createLinearGradient(0,0,0,-r);
-        grd.addColorStop(0, '#ffd700');
-        grd.addColorStop(.6, '#ffeb3b');
-        grd.addColorStop(1, '#fff59d');
-        ctx.fillStyle = grd;
-        ctx.beginPath();
-        ctx.moveTo(0,0);
-        ctx.quadraticCurveTo(10,-r*0.6, 0,-r);
-        ctx.quadraticCurveTo(-10,-r*0.6, 0,0);
+        const grd=ctx.createLinearGradient(0,0,0,-r);
+        grd.addColorStop(0,'#ffd700'); grd.addColorStop(.6,'#ffeb3b'); grd.addColorStop(1,'#fff59d');
+        ctx.fillStyle=grd;
+        ctx.beginPath(); ctx.moveTo(0,0);
+        ctx.quadraticCurveTo(10,-r*0.6,0,-r); ctx.quadraticCurveTo(-10,-r*0.6,0,0);
         ctx.closePath(); ctx.fill();
         ctx.restore();
       }
-      // centro
-      ctx.fillStyle = '#6b3f00';
-      ctx.beginPath(); ctx.arc(0,0,12,0,TAU); ctx.fill();
-      ctx.fillStyle = '#9c6400'; ctx.beginPath(); ctx.arc(-3,-3,5,0,TAU); ctx.fill();
-      ctx.restore();
-      ctx.restore();
-      // crecimiento
-      this.grow = Math.min(1, this.grow + 0.01);
+      ctx.fillStyle='#6b3f00'; ctx.beginPath(); ctx.arc(0,0,12,0,TAU); ctx.fill();
+      ctx.fillStyle='#9c6400'; ctx.beginPath(); ctx.arc(-3,-3,5,0,TAU); ctx.fill();
+      ctx.restore(); ctx.restore();
+
+      this.grow=Math.min(1,this.grow+0.01);
     }
   }
 
-  const bouquet = [];
+  /* ----- Ramo ----- */
+  const bouquet=[];
   function seedBouquet(){
-    bouquet.length = 0;
-    const cols = Math.floor(innerWidth/180);
-    const rows = Math.floor(innerHeight/260);
-    for(let y=0;y<=rows;y++){
-      for(let x=0;x<=cols;x++){
-        const px = (x+0.5)*innerWidth/(cols+1) + rand(-20,20);
-        const py = innerHeight*0.55 + rand(-20,40) + y*12;
-        bouquet.push(new YellowFlower(px, py, rand(0.9, 1.2)));
-      }
+  bouquet.length = 0;
+
+  const isShort  = innerHeight < 700;   // pantallas bajitas
+  const isNarrow = innerWidth  < 440;   // pantallas angostas
+
+  // Baja el ramo cuando la pantalla es corta
+  const baseY = innerHeight * (isShort ? 0.68 : 0.60);
+
+  // Menos columnas/filas y flores un poco más pequeñas en móvil
+  const cols = Math.max(1, Math.floor(innerWidth / 200));
+  const rows = isShort ? 1 : Math.max(1, Math.floor(innerHeight / 280));
+
+  const sMin = isShort || isNarrow ? 0.75 : 0.90;
+  const sMax = isShort || isNarrow ? 1.00 : 1.20;
+
+  for(let y=0; y<=rows; y++){
+    for(let x=0; x<=cols; x++){
+      const px = (x+0.5)*innerWidth/(cols+1) + rand(-18,18);
+      const py = baseY + rand(-8,24) + y*10;
+      bouquet.push(new YellowFlower(px, py, rand(sMin, sMax)));
     }
   }
-  seedBouquet();
-  addEventListener('resize', seedBouquet, {passive:true});
+}
 
-  // ==========================
-  // Pétalos flotantes & corazones
-  // ==========================
-  const floatersArr = [];
-  function spawnFloater(burst=false, x=rand(0,innerWidth), y=rand(innerHeight*0.4, innerHeight*0.9)){
-    const n = burst? 40: 1;
+
+  /* ----- Pétalos y corazones ----- */
+  const floaters=[], hearts=[];
+  let petalsCount=0, heartsCount=0;
+  const MAX_PARTICLES=800;
+
+  function spawnFloater(burst=false,x=rand(0,innerWidth),y=rand(innerHeight*0.4,innerHeight*0.9)){
+    const n=burst?40:1;
     for(let i=0;i<n;i++){
-      floatersArr.push({
-        x: x + rand(-20,20), y: y + rand(-20,20),
-        vx: rand(-0.6,0.6), vy: rand(-1.2,-0.2),
-        r: rand(6,10), rot: rand(0,TAU), vr: rand(-0.02,0.02), life: rand(220,420)
-      });
+      if(floaters.length>MAX_PARTICLES) floaters.shift();
+      floaters.push({x:x+rand(-20,20), y:y+rand(-20,20),
+        vx:rand(-0.6,0.6), vy:rand(-1.2,-0.2), r:rand(6,10),
+        rot:rand(0,TAU), vr:rand(-0.02,0.02), life:rand(220,420)});
+      petalsCount++;
     }
+    cPetals.textContent=petalsCount;
   }
-  setInterval(()=>spawnFloater(false), 240);
-
-  const hearts=[];
-  function heartBurst(){
-    const cx = innerWidth/2, cy = innerHeight*0.65;
+  function heartBurst(cx=innerWidth/2, cy=innerHeight*0.65){
     for(let i=0;i<28;i++){
-      hearts.push({x:cx, y:cy, vx:rand(-2,2), vy:rand(-3.2,-1.2), a:1, s:rand(0.6,1.2)});
+      if(hearts.length>MAX_PARTICLES) hearts.shift();
+      hearts.push({x:cx,y:cy,vx:rand(-2,2),vy:rand(-3.2,-1.2),a:1,s:rand(0.6,1.2)});
     }
-    spawnFloater(true, cx, cy);
+    heartsCount+=28; cHearts.textContent=heartsCount;
+    spawnFloater(true,cx,cy);
   }
-  document.getElementById('kiss').addEventListener('click', heartBurst);
+  kissBtn.addEventListener('click',()=>heartBurst());
 
-  // ==========================
-  // Teclas
-  // ==========================
-  let showName = true;
-  addEventListener('keydown', (e)=>{
-    const k = e.key.toLowerCase();
-    if(k==='h'){
-      showName = !showName; document.querySelector('.hero').style.display = showName? 'grid':'none';
-    } else if(k==='d'){
-      diag.style.display = diag.style.display==='none' || !diag.style.display ? 'block':'none';
-      updateDiagnostics();
-    }
+  /* ----- Dibujo principal ----- */
+  let drawing=false, lastSpawn=0;
+  addEventListener('pointerdown',e=>{
+    if(document.body.getAttribute('data-step')!=='poem') return;
+    drawing=true; spawnFloater(true,e.clientX,e.clientY);
+  });
+  addEventListener('pointerup',()=>drawing=false);
+  addEventListener('pointermove',e=>{
+    if(document.body.getAttribute('data-step')!=='poem' || !drawing) return;
+    const now=performance.now();
+    if(now-lastSpawn>18){ spawnFloater(false,e.clientX,e.clientY); lastSpawn=now; }
   });
 
-  // ==========================
-  // Render principal
-  // ==========================
   function drawFloaters(){
-    ctxFl.clearRect(0,0,innerWidth, innerHeight);
+    ctxFl.clearRect(0,0,innerWidth,innerHeight);
     // pétalos
-    for(let i=floatersArr.length-1;i>=0;i--){
-      const p = floatersArr[i];
-      p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life -= 1;
-      if(p.life<=0 || p.y < -20){ floatersArr.splice(i,1); continue; }
-      ctxFl.save(); ctxFl.translate(p.x, p.y); ctxFl.rotate(p.rot);
-      const grd = ctxFl.createLinearGradient(0,0,0,-p.r);
+    for(let i=floaters.length-1;i>=0;i--){
+      const p=floaters[i]; p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr; p.life-=1;
+      if(p.life<=0 || p.y<-20){ floaters.splice(i,1); continue; }
+      ctxFl.save(); ctxFl.translate(p.x,p.y); ctxFl.rotate(p.rot);
+      const grd=ctxFl.createLinearGradient(0,0,0,-p.r);
       grd.addColorStop(0,'#ffd700'); grd.addColorStop(1,'#ffeb3b');
-      ctxFl.fillStyle = grd;
-      ctxFl.beginPath(); ctxFl.moveTo(0,0); ctxFl.quadraticCurveTo(6,-p.r*0.6, 0,-p.r); ctxFl.quadraticCurveTo(-6,-p.r*0.6, 0,0); ctxFl.fill();
+      ctxFl.fillStyle=grd;
+      ctxFl.beginPath();
+      ctxFl.moveTo(0,0); ctxFl.quadraticCurveTo(6,-p.r*0.6,0,-p.r);
+      ctxFl.quadraticCurveTo(-6,-p.r*0.6,0,0); ctxFl.fill();
       ctxFl.restore();
     }
     // corazones
     for(let i=hearts.length-1;i>=0;i--){
-      const h = hearts[i];
-      h.x += h.vx; h.y += h.vy; h.vy += 0.03; h.a -= 0.01;
-      if(h.a<=0) { hearts.splice(i,1); continue; }
-      ctxFl.save(); ctxFl.globalAlpha = Math.max(0,h.a);
-      ctxFl.translate(h.x, h.y); ctxFl.scale(h.s, h.s);
-      ctxFl.fillStyle = '#ff6f61';
+      const h=hearts[i]; h.x+=h.vx; h.y+=h.vy; h.vy+=0.03; h.a-=0.01;
+      if(h.a<=0){ hearts.splice(i,1); continue; }
+      ctxFl.save(); ctxFl.globalAlpha=Math.max(0,h.a);
+      ctxFl.translate(h.x,h.y); ctxFl.scale(h.s,h.s);
+      ctxFl.fillStyle='#ff6f61';
       ctxFl.beginPath();
       ctxFl.moveTo(0,0);
-      ctxFl.bezierCurveTo(0,-12, -16,-12, -16,4);
-      ctxFl.bezierCurveTo(-16,16, 0,22, 0,30);
-      ctxFl.bezierCurveTo(0,22, 16,16, 16,4);
-      ctxFl.bezierCurveTo(16,-12, 0,-12, 0,0);
+      ctxFl.bezierCurveTo(0,-12,-16,-12,-16,4);
+      ctxFl.bezierCurveTo(-16,16,0,22,0,30);
+      ctxFl.bezierCurveTo(0,22,16,16,16,4);
+      ctxFl.bezierCurveTo(16,-12,0,-12,0,0);
       ctxFl.fill();
       ctxFl.restore();
     }
   }
 
   function loop(){
-    drawBg();
-    ctxF.clearRect(0,0,innerWidth, innerHeight);
-    for(const f of bouquet){ f.draw(ctxF); }
-    drawFloaters();
+    if(document.body.getAttribute('data-step')==='poem'){
+      drawBg();
+      ctxF.clearRect(0,0,innerWidth,innerHeight);
+      for(const f of bouquet){ f.draw(ctxF); }
+      drawFloaters();
+    }
     requestAnimationFrame(loop);
   }
 
-  // ==========================
-  // Tests / Diagnóstico (simples)
-  // ==========================
-  function updateDiagnostics(){
-    if(!diag || diag.style.display==='none') return;
-    diag.innerHTML = `
-      <div><b>tests</b></div>
-      starsDiv: ${!!starsDiv} · children=${starsDiv ? starsDiv.childElementCount : 0}<br/>
-      ctxBg: ${!!ctxBg} · ctxF: ${!!ctxF} · ctxFl: ${!!ctxFl}<br/>
-      bouquet: ${bouquet.length} · floaters: ${floatersArr.length} · hearts: ${hearts.length}
-    `;
-  }
+  /* ----- Poema: revelar líneas ----- */
+  const lineEls=[...document.querySelectorAll('#poemLines .line')];
+  function revealPoem(){ let i=0; (function step(){ if(i<lineEls.length){ lineEls[i].classList.add('show'); i++; setTimeout(step,1100); } })(); }
+  function startPoemScene(){ resize(); seedBouquet(); heartBurst(); revealPoem(); }
 
-  function selfTests(){
-    try{
-      console.assert(!!starsDiv, 'starsDiv debe existir antes de makeStars');
-      console.assert(!!ctxBg && !!ctxF && !!ctxFl, 'Los contextos de canvas deben estar disponibles');
-      const nt = document.getElementById('nameText');
-      console.assert(!!nt, 'nameText debe existir');
-      // Comprobación de parámetro ?n= (no altera si no existe)
-      const params = new URLSearchParams(location.search);
-      const tempN = params.get('n');
-      if(tempN){ nt.textContent = tempN + ' \uD83D\uDC9B'; }
-      console.log('%c[OK] Self-tests básicos superados', 'color:#ffd54f');
-    }catch(e){
-      console.error('[Fallo en self-tests]', e);
-    }
-  }
-
-  // ==========================
-  // Inicio
-  // ==========================
-  selfTests();
-  resize();
-  loop();
-
-  // Toque en pantalla: pétalos donde tocas
-  addEventListener('pointerdown', (e)=>{ spawnFloater(true, e.clientX, e.clientY); updateDiagnostics(); });
-
-  // Ajuste de animación de trazo
-  const dashElems = document.querySelectorAll('.dash-animate');
-  dashElems.forEach(el=>{
-    const len = el.getTotalLength();
-    el.style.setProperty('--len', len);
-  });
-
-  // 🌟 Extra: al entrar, un pequeño beso automático
-  setTimeout(()=>{ heartBurst(); updateDiagnostics(); }, 1200);
-
-  // Helper para cambiar nombre por query (?n=Tu%20Nombre)
-  const params = new URLSearchParams(location.search);
-  const n = params.get('n');
-  if(n){ document.getElementById('nameText').textContent = n + ' \uD83D\uDC9B'; }
-  </script>
+  requestAnimationFrame(loop);
+})();
+</script>
 </body>
 </html>
